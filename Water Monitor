@@ -1,0 +1,47 @@
+mport pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+data = {
+    'day': list(range(1, 11)),
+    'usage_liters': [350, 280, 400, 250, 370, 260, 390, 300, 410, 230],
+    'temperature': [32, 30, 35, 29, 33, 28, 34, 31, 36, 27],
+    'outdoor_activity': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+    'overuse': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+}
+df = pd.DataFrame(data)
+df.to_csv("water_usage.csv", index=False)
+df.head()
+df = pd.read_csv("water_usage.csv")
+print("Dataset Overview:")
+print(df.head())
+
+# Visualize usage
+sns.lineplot(x='day', y='usage_liters', data=df, marker='o')
+plt.title("Daily Water Usage (Liters)")
+plt.xlabel("Day")
+plt.ylabel("Usage (liters)")
+plt.grid(True)
+plt.show()
+X = df[['usage_liters', 'temperature', 'outdoor_activity']]
+y = df['overuse']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f"Model Accuracy: {accuracy*100:.2f}%")
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Step 5: Make a Prediction
+def predict_overuse(usage, temp, activity):
+    prediction = model.predict([[usage, temp, activity]])
+    return "Water Overuse Detected!" if prediction[0] == 1 else "Water Usage is Normal."
+predict_overuse(360, 34, 1)
